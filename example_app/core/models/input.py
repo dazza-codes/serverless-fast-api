@@ -1,6 +1,6 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
 class InputExample(BaseModel):
-    a: int = Field(..., title="Input value a")
-    b: int = Field(..., title="Input value b")
+    a: int = ...
+    b: int = ...

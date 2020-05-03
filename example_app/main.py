@@ -1,3 +1,6 @@
+import os
+from typing import Optional
+
 from fastapi import FastAPI
 from example_app.api.api_v1.api import router as api_router
 from example_app.core.config import API_V1_STR, PROJECT_NAME
@@ -27,4 +30,11 @@ def pong():
     return {"ping": "pong!"}
 
 
-handler = Mangum(app, enable_lifespan=False)
+def get_asgi_handler(fast_api: FastAPI) -> Optional[Mangum]:
+    """Initialize an AWS Lambda ASGI handler"""
+
+    if os.getenv("AWS_EXECUTION_ENV"):
+        return Mangum(fast_api, enable_lifespan=False)
+
+
+handler = get_asgi_handler(app)

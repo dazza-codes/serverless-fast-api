@@ -1,4 +1,9 @@
 
+# use poetry_requirements.py to generate
+# pip requirements.txt on the fly
+requirements.txt
+
+
 .python-version
 
 /.vscode/

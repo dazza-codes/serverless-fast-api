@@ -1,7 +1,7 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
 class OutputExample(BaseModel):
-    a: int = Field(..., title="Input value a")
-    b: int = Field(..., title="Input value b")
-    result: int = Field(..., title="Result of a * b")
+    a: int = ...
+    b: int = ...
+    result: int = ...

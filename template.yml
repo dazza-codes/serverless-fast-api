@@ -28,5 +28,5 @@ Resources:
     FastapiExampleGateway:
         Type: AWS::Serverless::Api
         Properties:
-            StageName: prod
+            StageName: dev
             OpenApiVersion: '3.0.0'

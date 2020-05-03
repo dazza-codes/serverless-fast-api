@@ -1,4 +1,0 @@
-fastapi>=0.42.0
-mangum>=0.7.0
-pytest
-requests

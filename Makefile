@@ -6,7 +6,23 @@ SHELL = /bin/bash
 .SUFFIXES:
 
 LIB = example_app
-PACKAGE = serverless-fast-api
+
+#
+# Note: similar variable names are in scripts/package_lambda.sh and terraform/*.tf
+#
+
+AWS_DEFAULT_PROFILE ?= ${AWS_DEFAULT_PROFILE:-default}
+
+APP_PACKAGE = serverless-fast-api
+APP_VERSION ?= 0.1.0
+
+# The pyproject.toml defines the python version, keep these in sync
+APP_PY_VER = py37
+APP_PY_VERSION = 3.7
+
+APP_S3_BUCKET = "terraform-serverless-deploys"
+APP_S3_KEY    = "$(APP_PACKAGE)/$(APP_PACKAGE)-$(APP_VERSION)"
+
 
 clean:
 	@rm -rf build dist .eggs *.egg-info
@@ -18,14 +34,14 @@ clean:
 
 docker-build: clean
 	./scripts/poetry_requirements.py > requirements.txt
-	docker build . -t $(PACKAGE)
+	docker build . -t $(APP_PACKAGE):$(APP_VERSION)
 	rm requirements.txt
 
 docker-run: docker-build
-	docker run --rm -p 8000:8000 $(PACKAGE)
+	docker run --rm -p 8000:8000 $(APP_PACKAGE):$(APP_VERSION)
 
 docker-shell: docker-build
-	docker run -it --rm $(PACKAGE) /bin/bash
+	docker run -it --rm $(APP_PACKAGE):$(APP_VERSION) /bin/bash
 
 make app-run:
 	@poetry run uvicorn example_app.main:app --port 8000 --reload
@@ -34,7 +50,7 @@ flake8: clean
 	@poetry run flake8 --ignore=E501 $(LIB)
 
 format: clean
-	@poetry run black $(LIB) tests scripts
+	@poetry run black $(LIB) tests scripts *.py
 
 init: poetry
 	# Install the latest project dependencies (ignore the lock file)
@@ -69,6 +85,17 @@ package: clean
 
 package-check: package
 	@poetry check
+
+lambda-package: clean
+	export APP_PACKAGE=$(APP_PACKAGE)
+	export APP_VERSION=$(APP_VERSION)
+	export APP_PY_VER=$(APP_PY_VER)
+	export APP_PY_VERSION=$(APP_PY_VERSION)
+	./scripts/package_lambda.sh
+
+lambda-deploy: lambda-package
+	cd terraform
+	terraform apply -var="app_version=$(APP_VERSION)" -var="aws_default_profile=$(AWS_DEFAULT_PROFILE)"
 
 poetry:
 	@if ! which poetry > /dev/null; then \

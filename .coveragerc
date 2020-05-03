@@ -1,0 +1,6 @@
+[run]
+source =
+    example_app
+omit =
+    tests/*
+    example_app/version.py

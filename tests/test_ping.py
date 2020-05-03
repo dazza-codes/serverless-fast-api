@@ -1,4 +1,5 @@
 from starlette.testclient import TestClient
+
 from example_app.main import app
 
 client = TestClient(app)

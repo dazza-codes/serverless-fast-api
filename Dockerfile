@@ -15,6 +15,6 @@ RUN echo "uvicorn" >> requirements.txt \
 
 COPY ./example_app ./example_app
 
-EXPOSE 8080
+EXPOSE 8000
 
-CMD ["uvicorn", "example_app.main:app", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["uvicorn", "example_app.main:app", "--host", "0.0.0.0", "--port", "8000"]

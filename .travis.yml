@@ -19,7 +19,7 @@ jobs:
   include:
     - stage: test
       script:
-        - pytest -v --cov tests
+        - make test-ci
 #    - stage: deploy
 #      script:
 #        - sam validate

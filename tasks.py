@@ -6,9 +6,8 @@ from invoke_release.tasks import *  # noqa: F403
 from invoke_release.plugins import PatternReplaceVersionInFilesPlugin
 
 configure_release_parameters(  # noqa: F405
-    module_name="serverless-fast-api",
     display_name="Serverless AWS FastAPI",
-    python_directory="example_app",
+    module_name="example_app",
     plugins=[
         PatternReplaceVersionInFilesPlugin(
             "pyproject.toml",

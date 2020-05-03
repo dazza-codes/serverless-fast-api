@@ -16,7 +16,7 @@ def example_get():
     And this path operation will:
     * return "hej!"
     """
-    return {"msg": "Hej!"}
+    return {"msg": "Hey!"}
 
 
 @router.post("/example", response_model=OutputExample, tags=["example post"])

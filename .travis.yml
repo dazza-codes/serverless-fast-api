@@ -2,29 +2,39 @@ language: python
 cache: pip
 python:
 - '3.7'
+
+# To debug what dependencies are required/installed, try:
+# $ CI=true ./scripts/poetry_requirements.py
+#
+# Creating the CI requirements.txt this way avoids installation
+# of poetry and all of the project dev-dependencies, which can
+# take much longer for a full virtualenv installation.
+
 install:
-- pip install awscli
-- pip install aws-sam-cli
+- pip install -U tomlkit
+- scripts/poetry_requirements.py > requirements.txt
+- pip install -U -r requirements.txt
+
 jobs:
   include:
     - stage: test
       script:
-        - pip install pytest
-        - pip install -e .
-        - pytest . -v
-    - stage: deploy
-      script:
-        - sam validate
-        - sam build --debug
-        - sam package --s3-bucket my-travis-deployment-bucket --output-template-file out.yml --region eu-west-1
-        - sam deploy --template-file out.yml --stack-name example-stack-name --region eu-west-1 --no-fail-on-empty-changeset --capabilities CAPABILITY_IAM
-      skip_cleanup: true
-      if: branch = master
+        - pytest -v --cov tests
+#    - stage: deploy
+#      script:
+#        - sam validate
+#        - sam build --debug
+#        - sam package --s3-bucket my-travis-deployment-bucket --output-template-file out.yml --region eu-west-1
+#        - sam deploy --template-file out.yml --stack-name example-stack-name --region eu-west-1 --no-fail-on-empty-changeset --capabilities CAPABILITY_IAM
+#      skip_cleanup: true
+#      if: branch = master
+
 notifications:
   email:
-    on_failure: always
-env:
-  global:
-  - AWS_DEFAULT_REGION=eu-west-1
-  - secure: your-encrypted-aws-access-key-id
-  - secure: your-encrypted-aws-secret-access-key
+    on_failure: never
+
+#env:
+#  global:
+#  - AWS_DEFAULT_REGION=eu-west-1
+#  - secure: your-encrypted-aws-access-key-id
+#  - secure: your-encrypted-aws-secret-access-key

@@ -7,6 +7,9 @@ from mangum import Mangum
 from example_app.api.api_v1.api import router as api_router
 from example_app.core.config import API_V1_STR
 from example_app.core.config import PROJECT_NAME
+from example_app.version import __version__
+
+VERSION = __version__
 
 app = FastAPI(
     title=PROJECT_NAME,
@@ -14,6 +17,7 @@ app = FastAPI(
     # openapi_prefix="/Prod"
 )
 
+app.VERSION = VERSION
 
 app.include_router(api_router, prefix=API_V1_STR)
 
@@ -26,10 +30,10 @@ def pong():
     This will let the user know that the service is operational.
 
     And this path operation will:
-    * show a lifesign
+    * show a life-sign
 
     """
-    return {"ping": "pong!"}
+    return {"ping": "pong!", "version": app.VERSION}
 
 
 def get_asgi_handler(fast_api: FastAPI) -> Optional[Mangum]:

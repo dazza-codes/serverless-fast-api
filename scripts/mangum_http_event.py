@@ -1,0 +1,58 @@
+# Adapted from test fixture data in
+# https://github.com/erm/mangum/blob/master/tests/
+
+mock_http_event = {
+    "path": "/ping",
+    "body": None,
+    "headers": {
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+        "Accept-Encoding": "gzip, deflate, lzma, sdch, br",
+        "Accept-Language": "en-US,en;q=0.8",
+        "CloudFront-Forwarded-Proto": "https",
+        "CloudFront-Is-Desktop-Viewer": "true",
+        "CloudFront-Is-Mobile-Viewer": "false",
+        "CloudFront-Is-SmartTV-Viewer": "false",
+        "CloudFront-Is-Tablet-Viewer": "false",
+        "CloudFront-Viewer-Country": "US",
+        "Host": "test.execute-api.us-west-2.amazonaws.com",
+        "Upgrade-Insecure-Requests": "1",
+        "X-Forwarded-For": "192.168.100.1, 192.168.1.1",
+        "X-Forwarded-Port": "443",
+        "X-Forwarded-Proto": "https",
+    },
+    "pathParameters": {"proxy": "hello"},
+    "requestContext": {
+        "accountId": "123456789012",
+        "resourceId": "us4z18",
+        "stage": "dev",
+        "requestId": "41b45ea3-70b5-11e6-b7bd-69b5aaebc7d9",
+        "identity": {
+            "cognitoIdentityPoolId": "",
+            "accountId": "",
+            "cognitoIdentityId": "",
+            "caller": "",
+            "apiKey": "",
+            "sourceIp": "192.168.100.1",
+            "cognitoAuthenticationType": "",
+            "cognitoAuthenticationProvider": "",
+            "userArn": "",
+            "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.82 Safari/537.36 OPR/39.0.2256.48",
+            "user": "",
+        },
+        "resourcePath": "/{proxy+}",
+        "httpMethod": "GET",
+        "apiId": "123",
+    },
+    "resource": "/{proxy+}",
+    "httpMethod": "GET",
+    "queryStringParameters": None,
+    "multiValueQueryStringParameters": None,
+    "stageVariables": {"stageVarName": "stageVarValue"},
+}
+
+
+if __name__ == "__main__":
+
+    import json
+
+    print(json.dumps(mock_http_event))

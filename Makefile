@@ -14,7 +14,7 @@ LIB = example_app
 AWS_DEFAULT_PROFILE ?= ${AWS_DEFAULT_PROFILE:-default}
 
 APP_PACKAGE = serverless-fast-api
-APP_VERSION ?= 0.1.0
+APP_VERSION ?= 0.2.0
 
 # The pyproject.toml defines the python version, keep these in sync
 APP_PY_VER = py37

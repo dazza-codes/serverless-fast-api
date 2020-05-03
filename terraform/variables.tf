@@ -32,7 +32,7 @@ variable "app_name" {
 # invoke-release manages this version string, via tasks.py
 
 variable "app_version" {
-  default = "0.1.0"
+  default = "0.2.0"
 }
 
 variable "app_stage" {

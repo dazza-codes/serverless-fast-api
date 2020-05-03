@@ -24,8 +24,8 @@ make docker-run
 In another terminal, try to `curl` the endpoints, e.g.
 
 ```shell script
-curl http://127.0.0.1:8080/ping
-curl http://127.0.0.1:8080/api/v1/example
+curl http://127.0.0.1:8000/ping
+curl http://127.0.0.1:8000/api/v1/example
 ```
 
 A python example for the same thing is in:

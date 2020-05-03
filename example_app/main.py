@@ -2,9 +2,11 @@ import os
 from typing import Optional
 
 from fastapi import FastAPI
-from example_app.api.api_v1.api import router as api_router
-from example_app.core.config import API_V1_STR, PROJECT_NAME
 from mangum import Mangum
+
+from example_app.api.api_v1.api import router as api_router
+from example_app.core.config import API_V1_STR
+from example_app.core.config import PROJECT_NAME
 
 app = FastAPI(
     title=PROJECT_NAME,
@@ -35,6 +37,7 @@ def get_asgi_handler(fast_api: FastAPI) -> Optional[Mangum]:
 
     if os.getenv("AWS_EXECUTION_ENV"):
         return Mangum(fast_api, enable_lifespan=False)
+    return None
 
 
 handler = get_asgi_handler(app)

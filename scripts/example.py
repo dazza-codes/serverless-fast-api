@@ -3,7 +3,7 @@
 import requests
 from pprint import pprint
 
-BASE_URI = "http://127.0.0.1:8080"
+BASE_URI = "http://127.0.0.1:8000"
 
 url = f"{BASE_URI}/ping"
 response = requests.get(url)

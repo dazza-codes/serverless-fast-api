@@ -22,13 +22,13 @@ docker-build: clean
 	rm requirements.txt
 
 docker-run: docker-build
-	docker run --rm -p 8080:8080 $(PACKAGE)
+	docker run --rm -p 8000:8000 $(PACKAGE)
 
 docker-shell: docker-build
 	docker run -it --rm $(PACKAGE) /bin/bash
 
 make app-run:
-	@poetry run uvicorn example_app.main:app --port 8080 --reload
+	@poetry run uvicorn example_app.main:app --port 8000 --reload
 
 flake8: clean
 	@poetry run flake8 --ignore=E501 $(LIB)
@@ -43,20 +43,21 @@ init: poetry
 	@poetry install -v --no-interaction
 
 lint: clean
-	@poetry run pylint --disable=missing-docstring tests
 	@poetry run pylint $(LIB)
 
 test: clean
-	@poetry run pytest -q -n auto -r f --durations=10 --show-capture=no tests
+	@poetry run pytest -v \
+		--durations=10 \
+		--show-capture=no \
+		--cov-config .coveragerc \
+		--cov-report html \
+		--cov-report term \
+		--cov=$(LIB) tests
 
 test-ci: clean
-	@poetry run pytest \
-		-m "not s3_live" \
-		-W ignore::DeprecationWarning \
+	pytest -v \
 		--cov-config .coveragerc \
-		--verbose \
 		--cov-report term \
-		--cov-report xml \
 		--cov=$(LIB) tests
 
 typehint: clean

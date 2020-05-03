@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
-from example_app.core.models.output import OutputExample
 from example_app.core.models.input import InputExample
+from example_app.core.models.output import OutputExample
 
 router = APIRouter()
 
@@ -9,12 +9,12 @@ router = APIRouter()
 @router.get("/example", tags=["example get"])
 def example_get():
     """
-    Say hej!
+    Say hey!
 
     This will greet you properly
 
     And this path operation will:
-    * return "hej!"
+    * return {"msg": "Hey!"}
     """
     return {"msg": "Hey!"}
 

@@ -1,0 +1,4 @@
+# Ignore large dump SQL files
+rds_setup/dumps/*.sql
+
+iam_roles/*

@@ -40,5 +40,5 @@ variable "app_stage" {
 }
 
 variable "app_s3_bucket" {
-  default = "terraform-serverless-deploys"
+  default = "app-serverless-deploys"
 }

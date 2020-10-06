@@ -13,6 +13,7 @@ python:
 install:
 - pip install -U tomlkit
 - scripts/poetry_requirements.py > requirements.txt
+- pip install -U -r requirements-dev.txt
 - pip install -U -r requirements.txt
 
 jobs:

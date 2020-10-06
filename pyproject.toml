@@ -15,8 +15,12 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "~3.7.0"
+
 fastapi = "^0.54.1"
 mangum = "^0.8.0"
+
+jwcrypto = "^0.8"
+pydantic = {extras = ["dotenv"], version = "^1.6.1"}
 
 
 [tool.poetry.dev-dependencies]

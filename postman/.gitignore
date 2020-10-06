@@ -1,0 +1,11 @@
+# project artifacts and logs
+logs/**/*.log
+
+# package directories
+.aws-sam
+node_modules
+layer/**
+jspm_packages
+
+# Serverless directories
+.serverless

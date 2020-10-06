@@ -1,0 +1,12 @@
+
+FLASK_ENV: development
+FLASK_DEBUG: false
+LOG_LEVEL: DEBUG
+
+API_ENV: dev
+API_ENDPOINT: https://localhost:5000
+API_ADMIN_EMAILS: joe.bloggs@example.com
+
+API_COGNITO_REGION: us-west-2
+API_COGNITO_CLIENT_ID: tst-client-id
+API_COGNITO_POOL_ID: us-west-cognito-id

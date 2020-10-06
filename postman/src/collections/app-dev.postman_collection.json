@@ -1,0 +1,105 @@
+{
+	"info": {
+		"_postman_id": "76fef035-6489-4086-b359-657066baf3b5",
+		"name": "app-dev",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "404",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "de9c2db0-de38-457f-8826-8b03075dcfab",
+						"exec": [
+							"pm.test(\"MISSING API route has HTTP status 404\", function() {",
+							"    pm.response.to.have.status(404);",
+							"});",
+							"",
+							"pm.test(\"MISSING API route has message body\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.message).to.eql(\"404 Not Found\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BaseURL}}/missing",
+					"host": [
+						"{{BaseURL}}"
+					],
+					"path": [
+						"missing"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "healthz",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "236c6bd4-9cb3-4bd1-815a-965eeeb99855",
+						"exec": [
+							"pm.test(\"/healthz API route has HTTP status 200\", function() {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BaseURL}}/healthz",
+					"host": [
+						"{{BaseURL}}"
+					],
+					"path": [
+						"healthz"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "93df93a1-223a-4aff-8f36-97014b9fb5ac",
+				"type": "text/javascript",
+				"exec": [
+					"// https://blog.postman.com/api-testing-tips-from-a-postman-professional/",
+					"var baseUrl = pm.environment.get('BaseURL');",
+					"if (! baseUrl.includes(\"aws\")) return null;",
+					"// Custom JWT auth because AWS-API-Gateway does not allow 'Bearer ' prefix.",
+					"const COGNITO_JWT = pm.environment.get(\"COGNITO_JWT\");",
+					"pm.request.headers.add({key: 'Authorization', value: COGNITO_JWT});",
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "e4ecd757-9807-433d-aa3b-a0f1b203d312",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"protocolProfileBehavior": {}
+}

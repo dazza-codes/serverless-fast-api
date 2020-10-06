@@ -1,0 +1,39 @@
+{
+  "name": "serverless-fast-api-postman",
+  "version": "0.1.0",
+  "description": "Serverless Fast-API Postman",
+  "author": "Darren Weber <dweber.consulting@gmail.com>",
+  "main": "./src/newman_run.js",
+  "private": true,
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/dazza-codes/serverless-fast-api.git"
+  },
+  "bugs": {
+    "url": "https://github.com/dazza-codes/serverless-fast-api/issues"
+  },
+  "homepage": "https://github.com/dazza-codes/serverless-fast-api#readme",
+  "dependencies": {
+    "amazon-cognito-identity-js": "^4.3.0",
+    "aws-sdk": "^2.686.0",
+    "jsonwebtoken": "^8.5.1",
+    "jwk-to-pem": "^2.0.3",
+    "config": "^3.3.1",
+    "newman": "^5.0.1",
+    "newman-reporter-winston": "https://github.com/dazza-codes/newman-reporter-winston/",
+    "node-fetch": "^2.6.0",
+    "process": "^0.11.10",
+    "request": "^2.88.2",
+    "uuid": "^8.1.0"
+  },
+  "devDependencies": {
+    "prettier": "^2.0.5",
+    "jest": "^24.7.1"
+  },
+  "scripts": {
+    "test-app-dev-api": "NODE_ENV=app_dev NEWMAN_RUN=true node ./src/newman_run.js",
+    "test-app-dev-newman-env": "NODE_ENV=app_dev TEST_ENV=test node ./src/newman_env.js",
+    "test-app-dev-cognito-auth": "NODE_ENV=app_dev TEST_AUTH=test node ./src/cognito_auth.js"
+  }
+}

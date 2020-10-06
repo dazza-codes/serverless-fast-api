@@ -20,7 +20,7 @@ APP_VERSION ?= 0.2.0
 APP_PY_VER = py37
 APP_PY_VERSION = 3.7
 
-APP_S3_BUCKET = "terraform-serverless-deploys"
+APP_S3_BUCKET = "app-serverless-deploys"
 APP_S3_KEY    = "$(APP_PACKAGE)/$(APP_PACKAGE)-$(APP_VERSION)"
 
 
@@ -33,7 +33,7 @@ clean:
 	@find . -type f -name "*.py[co]" -exec rm -rf {} +
 
 docker-build: clean
-	./scripts/poetry_requirements.py > requirements.txt
+	@poetry export --without-hashes -f requirements.txt -o requirements.txt
 	docker build . -t $(APP_PACKAGE):$(APP_VERSION)
 	rm requirements.txt
 
@@ -53,9 +53,10 @@ format: clean
 	@poetry run black $(LIB) tests scripts *.py
 
 init: poetry
-	# Install the latest project dependencies (ignore the lock file)
+	# Install the latest project dependencies
 	@source "$(HOME)/.poetry/env"
 	@poetry run pip install --upgrade pip
+	@poetry run pip install --upgrade -r requirements-dev.txt
 	@poetry install -v --no-interaction
 
 lint: clean
@@ -94,7 +95,7 @@ lambda-package: clean
 	./scripts/package_lambda.sh
 
 lambda-deploy: lambda-package
-	cd terraform
+	cd infrastructure/terraform
 	terraform apply -var="app_version=$(APP_VERSION)" -var="aws_default_profile=$(AWS_DEFAULT_PROFILE)"
 
 poetry:
@@ -103,4 +104,4 @@ poetry:
 		python /tmp/get-poetry.py; \
 	fi
 
-.PHONY: clean coverage docs flake8 format init lint test typehint package package-check package-test publish poetry
+.PHONY: clean flake8 format init lint test typehint package package-check poetry

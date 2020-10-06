@@ -1,0 +1,318 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+# References
+# https://www.infoq.com/articles/aws-vpc-cloudformation/
+# https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Scenario2.html
+
+Parameters:
+  appStage:
+    Default: dev
+    Description: APP deployment stage
+    Type: String
+    MinLength: '1'
+    MaxLength: '16'
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    ConstraintDescription: Begin with a letter and use only alphanumeric characters.
+  appDataBucket:
+    Default: app-data-dev
+    Description: APP data bucket name
+    Type: String
+    MinLength: '2'
+    MaxLength: '62'
+    AllowedPattern: '^[a-z0-9][a-z0-9.-]{2,62}$'
+    ConstraintDescription: https://docs.aws.amazon.com/AmazonS3/latest/dev/BucketRestrictions.html
+  databaseName:
+    Default: appDevDb
+    Description: Database name
+    Type: String
+    MinLength: '1'
+    MaxLength: '64'
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    ConstraintDescription: Begin with a letter and use only alphanumeric characters.
+  databaseAdmin:
+    NoEcho: 'true'
+    Description: Database admin username
+    Default: appDevDbAdmin
+    Type: String
+    MinLength: '1'
+    MaxLength: '16'
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    ConstraintDescription: Begin with a letter and use only alphanumeric characters.
+
+
+Resources:
+
+  databaseS3ImportRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: String
+      RoleName: !Join ['-', [!Ref "AWS::Region", !Ref "AWS::StackName", "rds-s3-import-role" ]]
+      Path: "/app/"
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - rds.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      MaxSessionDuration: 43200  # the max allowed
+      Policies:
+        - PolicyName: !Join ['', [!Ref "AWS::StackName", "-rds-s3-import-policy" ]]
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:ListBucket
+                Resource:
+                  - !Join ["", ["arn:aws:s3:::", !Ref "appDataBucket"]]
+                  - !Join ["", ["arn:aws:s3:::", !Ref "appDataBucket", "/*"]]
+                Sid: s3Import
+      Tags:
+        - Key: Product
+          Value: serverless-app
+        - Key: Stage
+          Value: !Ref 'appStage'
+        - Key: Tier
+          Value: data
+        - Key: Purpose
+          Value: standard
+        - Key: Project
+          Value: app
+        - Key: Application
+          Value: storage
+
+  # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-rds-database-instance.html
+  # - no DBInstanceIdentifier is specified so that it is easier for CFN to update/replace it
+  # - https://aws.amazon.com/rds/instance-types/ describes details of the options
+  database:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBName: !Ref databaseName
+      MasterUsername: !Ref 'databaseAdmin'
+      MasterUserPassword: !Join ["", ["{{resolve:secretsmanager:", !Ref "databaseAdmin", ":SecretString:password}}"]]
+      Engine: postgres
+      EngineVersion: 11.6
+      AllocatedStorage: 256
+      StorageType: gp2
+      DBInstanceClass: db.t3.small
+      DeletionProtection: false
+      MultiAZ: false
+      # For associated roles, the "supported feature names" are only 's3Import', see
+      # https://docs.aws.amazon.com/AmazonRDS/latest/APIReference/API_DBEngineVersion.html
+      AssociatedRoles:
+        - FeatureName: "s3Import"
+          RoleArn: !GetAtt databaseS3ImportRole.Arn
+      DBSubnetGroupName: !Ref databaseSubnetGroup
+      VPCSecurityGroups:
+        - !GetAtt VPC.DefaultSecurityGroup
+      Tags:
+        - Key: Product
+          Value: serverless-app
+        - Key: Stage
+          Value: !Ref 'appStage'
+        - Key: Tier
+          Value: data
+        - Key: Purpose
+          Value: standard
+        - Key: Project
+          Value: app
+        - Key: Application
+          Value: storage
+
+  databaseSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Subnets
+      SubnetIds:
+        # for an RDS deployment, it requires at least 2 AZs
+        - !Ref privateSubnetA
+        - !Ref privateSubnetB
+
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 172.31.0.0/16
+      Tags:
+        - Key: Name
+          Value: !Join ['', [!Ref "AWS::StackName", "-VPC" ]]
+        - Key: Product
+          Value: serverless-app
+        - Key: Stage
+          Value: !Ref 'appStage'
+        - Key: Tier
+          Value: network
+        - Key: Purpose
+          Value: standard
+        - Key: Project
+          Value: app
+        - Key: Application
+          Value: vpc
+
+  # Our VPC will need internet access:
+  internetGateway:
+    Type: AWS::EC2::InternetGateway
+    DependsOn: VPC
+  attachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    # Notice how you can't attach an IGW to a VPC unless both are created:
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref internetGateway
+
+  publicSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      # for the dev deployments, only use the first AZ
+      AvailabilityZone:
+        Fn::Select:
+         - 0
+         - Fn::GetAZs: ""
+      CidrBlock: 172.31.10.0/24
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Join ["-", [!Ref "AWS::StackName","public-subnet-a"]]
+  publicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: Public
+  publicRoute1:   # Public route table has direct routing to internetGateway
+    Type: AWS::EC2::Route
+    DependsOn: attachGateway
+    Properties:
+      RouteTableId: !Ref publicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref internetGateway
+  publicSubnetARouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref publicSubnetA
+      RouteTableId: !Ref publicRouteTable
+
+  privateSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      # for an RDS deployment, it requires at least 2 AZs
+      AvailabilityZone:
+        Fn::Select:
+          - 0
+          - Fn::GetAZs: ""
+      CidrBlock: 172.31.20.0/24
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !Join ["-", [!Ref "AWS::StackName","private-subnet-a"]]
+
+  privateSubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      # for an RDS deployment, it requires at least 2 AZs
+      AvailabilityZone:
+        Fn::Select:
+          - 1
+          - Fn::GetAZs: ""
+      CidrBlock: 172.31.30.0/24
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !Join ["-", [!Ref "AWS::StackName","private-subnet-b"]]
+
+  privateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: Private
+  privateRoute1:
+    # Private route table can route public traffic via NAT Gateway (created below)
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref privateRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      # Route traffic through the NAT Gateway
+      NatGatewayId: !Ref NATGateway
+
+  privateSubnetARouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref privateSubnetA
+      RouteTableId: !Ref privateRouteTable
+  privateSubnetBRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref privateSubnetB
+      RouteTableId: !Ref privateRouteTable
+
+  # A NAT Gateway is used by any private subnet for public web access
+  # and the NAT Gateway must be attached to a public subnet
+  NATGateway:
+   Type: AWS::EC2::NatGateway
+   Properties:
+     AllocationId: !GetAtt ElasticIPAddress.AllocationId
+     SubnetId: !Ref publicSubnetA
+     Tags:
+     - Key: Name
+       Value: !Join ['', [!Ref "AWS::StackName", "-NAT" ]]
+  ElasticIPAddress:
+   Type: AWS::EC2::EIP
+   Properties:
+     Domain: VPC
+
+
+Outputs:
+  NATGatewayID:
+    Description: NATGateway ID
+    Value: !Ref NATGateway
+    Export:
+      Name: !Join ["-", [!Ref "AWS::StackName","nat"]]
+  VPCSecurityGroup:
+    Description: Default security for VPC
+    Value: !GetAtt VPC.DefaultSecurityGroup
+    Export:
+      Name: !Join ["-", [!Ref "AWS::StackName","vpc-sg"]]
+  VPCID:
+    Description: VPC ID
+    Value: !Ref VPC
+    Export:
+      Name: !Join ["-", [!Ref "AWS::StackName","vpc"]]
+  publicSubnetAID:
+    Description: Public Subnet A ID
+    Value: !Ref publicSubnetA
+    Export:
+      Name: !Join ["-", [!Ref "AWS::StackName","public-subnet-a"]]
+  privateSubnetAID:
+    Description: Private Subnet A ID
+    Value: !Ref privateSubnetA
+    Export:
+      Name: !Join ["-", [!Ref "AWS::StackName","private-subnet-a"]]
+  privateSubnetBID:
+    Description: Private Subnet B ID
+    Value: !Ref privateSubnetB
+    Export:
+      Name: !Join ["-", [!Ref "AWS::StackName","private-subnet-b"]]
+  databaseHost:
+    Description: Database hostname
+    Value: !GetAtt database.Endpoint.Address
+    Export:
+      Name: !Join ["-", [!Ref "AWS::StackName","db-host"]]
+  databaseName:
+    Description: Database name
+    Value: !Ref databaseName
+    Export:
+      Name: !Join ["-", [!Ref "AWS::StackName","db-name"]]
+  databaseAdmin:
+    Description: Database admin user
+    Value: !Ref databaseAdmin
+    Export:
+      Name: !Join ["-", [!Ref "AWS::StackName","db-user"]]

@@ -1,11 +1,9 @@
-FROM python:3.7
 
-## See also
-## - https://github.com/lambci/docker-lambda/issues/57
-## - https://github.com/myrmex-org/docker-lambda-packager
-#FROM lambci/lambda:build-python3.7
-##RUN rm /var/runtime/awslambda/runtime.cpython-36m-x86_64-linux-gnu.so
-#COPY runtime_mock.py /var/runtime/awslambda/runtime.py
+# For more information about this base image, see
+# https://hub.docker.com/r/lambci/lambda
+#FROM lambci/lambda:python3.7  # does not yet build OK due to permissions
+
+FROM python:3.7
 
 WORKDIR /app
 COPY requirements.txt ./

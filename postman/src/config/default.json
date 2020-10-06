@@ -1,0 +1,14 @@
+{
+    "logLevel": "info",
+    "postmanCollection": "collections/{test-suite}.postman_collection.json",
+
+    "baseURL": "https://{random-value}.execute-api.us-west-2.amazonaws.com/{stage}",
+
+    "cognito": {
+        "clientId": "client-app-id",
+        "userPoolId": "us-west-2_pool-id",
+        "region": "us-west-2",
+        "username": "your-username",
+        "password": "your-password"
+    }
+}

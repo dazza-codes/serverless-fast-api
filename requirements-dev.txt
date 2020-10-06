@@ -1,0 +1,54 @@
+
+# Pin the AWS SDK lambda packages to the provided versions, so
+# they can be removed from lambda layers.  The strategy is to
+# add the SDK libs as explicit requirements to every layer build
+# and then remove them from the build.  The `create_layer_zip`
+# function will call `clean_aws_packages` to remove the AWS SDK
+# libs listed below.
+#
+# fix boto3 and botocore to the current lambda layer versions
+# https://docs.aws.amazon.com/lambda/latest/dg/lambda-python.html
+# last checked on 2020-07: boto3-1.12.49 botocore-1.15.49
+#
+# This could also help to detect when a project dependency requires a version of these
+# AWS SDK libs that is different from the lambda versions.  To get this list:
+# `ls -1d /var/runtime/*.dist-info` in the lambci container.  These are
+# essentially the `boto3` library and the dependency tree it requires.
+#
+# /var/runtime/boto3-1.12.49.dist-info
+# /var/runtime/botocore-1.15.49.dist-info
+# /var/runtime/docutils-0.15.2.dist-info
+# /var/runtime/jmespath-0.9.5.dist-info
+# /var/runtime/python_dateutil-2.8.1.dist-info
+# /var/runtime/s3transfer-0.3.3.dist-info
+# /var/runtime/six-1.14.0.dist-info
+# /var/runtime/urllib3-1.25.9.dist-info
+
+boto3==1.12.49
+botocore==1.15.49
+docutils==0.15.2
+jmespath==0.9.5
+python_dateutil==2.8.1
+s3transfer==0.3.3
+six==1.14.0
+urllib3==1.25.9
+
+
+# extra app-dev dependencies
+
+requests==2.23
+typer==0.3.2
+uvicorn==0.11.5
+
+# common development dependencies
+
+black==19.10b0
+invoke-release==4.5.2
+mypy==0.770
+pre-commit==2.3.0
+pylint==2.0
+pytest==5.4
+pytest-cov==2.8.1
+
+moto[server]
+requests-mock
